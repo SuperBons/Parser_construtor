@@ -1,0 +1,77 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+  <html>
+  <head>
+     <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+     <meta name="Author" content="Chen Ding">
+     <meta name="GENERATOR" content="Mozilla/4.7 [en]C-CCK-MCD {Sony}  (WinNT; U) [Netscape]">
+     <title>Parser Assignment</title>
+  </head>
+  <body>
+  
+  <dl>
+  <h3>
+  Parser assignment</h3>
+
+  <h4>
+  <a NAME="Description"></a>Background</h4>
+  You are given a particially completed parser, which is intended to check
+  whether an input program is grammatically correct.&nbsp;
+  Some specific features:
+  <ul>
+  <li>
+  As in the Scanner project, the parser ignores (but copies) "meta-statements".</li>
+  
+  <li>
+  <a href="grammarLL1.txt">The LL(1) grammar definition of the 
+  language of interest is here.</a></li>
+    
+  <li>
+  For each input program, the parser reports "pass" or "error" as
+  the result of grammar analysis.&nbsp; It suffices to include only one of
+  these two words in the output (stdout or stderr) of the program.</li>
+  
+  <li>
+  The parser counts the number of global and local variables (through &lt;data decls>), functions
+  (through &lt;func list> but not function declarations), and
+  statements (through &lt;statements>)
+  in correct programs.&nbsp; It outputs the result in the following format: variable
+  <i>_num_variables</i>&nbsp; function <i>_num_functions</i> statement <i>_num_statements</i>.&nbsp;
+  For example, for a correct program with 4 variables, 2 functions and 6
+  statements, the compiler should output at least the following:</li>
+  
+  <ul>
+  <li>
+  Pass variable 4 function 2 statement 6</li>
+  </ul>
+  </ul>
+  
+    <h4>
+  <a NAME="What You Need To Do"></a>What You Need To Do</h4>
+  For this project, you are required to fill in the missing functions in the parser.cpp file.&nbsp; These functions have a TODO comment so you can easily find them.&nbsp; You will need to read through the code to learn how it works, and develop an understanding of how the parser works.&nbsp;  You do not need to create any additional functions or modify any other part of the program for it to work.&nbsp;  You are graded on your implementations of the missing functions.&nbsp;  If they are implemented correctly, the program will work as described in the Background section.&nbsp; 
+
+      <h4>
+  <a NAME="Tests"></a>Test programs</h4>
+  As in the Scanner project, a set of test programs can
+    be downloaded from <a href="test/all_tests.tar">here</a>.
+
+  <h4>Reference Output</h4>
+  The reference output of the correct parser on the test cases are
+  accessible <a href="RESULTS.txt">here</a>.
+    
+  <h4>
+    <a NAME="Tests"></a>What to submit</h4>
+  <ul>
+  <li>Submit your solution in a single compressed file (e.g., .zip/.tar/.rar/.gz). Include a ReadMe describing your implementation and the changes you made.&nbsp;</li> 
+  <li>We are providing you with a Makefile to compile your solution. When you submit your solution the Makefile must be there.&nbsp;</li>
+  <li><b>Do Not</b> include any files that are the result of compilation or testing.&nbsp;</li>
+  </ul>
+  All other submission instruction is the same as in the Scanner
+  project.&nbsp;
+
+    <h4>
+    <a NAME="Hints"></a>Hints</h4>
+  <ul>
+  <li>Yes, empty input is legal according to the grammar.</li>
+  </ul>
+  </body>
+  </html>
