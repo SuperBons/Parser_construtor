@@ -19,7 +19,7 @@ else
 
 endif
 
-CC=clang++
+CC=/usr/bin/clang++
 CC_OPTS=-O3 -std=c++11 -I $(INCLUDE_DIR) $(DEBUG_FLAGS) -c
 
 all : $(BIN_DIR) $(BIN_DIR)/parser

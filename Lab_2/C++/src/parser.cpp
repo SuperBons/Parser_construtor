@@ -7,6 +7,8 @@
 #include <iostream>
 #include <string>
 
+
+
 //----------------------------------------------------------------------------------------------
 // The Parser object.  Aside from the usual constructor / destructor pair, there is parse(),
 // get_next_word(), 3 getters for the counts, and the rules for the grammer, starting with
@@ -25,7 +27,7 @@
 
 
 Parser::Parser() :
-  fail_state{false}, variable_count{0}, function_count{0}, statement_count{0},
+  fail_state{false}, variable_count{0}, function_count{1}, statement_count{0},
   scanner{nullptr},
   current_word{ TokenType::INITIAL, std::string{""}, 0 }
 {
@@ -359,7 +361,9 @@ bool Parser::id_list_0(void) {
 
   // Add your code here
   // this will loop through until there's no ',', taking care of the epsilon 
-  while(current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ",") { get_next_word();  
+  while(current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ",") { 
+    get_next_word();  
+    ++variable_count; 
     if (!id()) {  fail_state = true; return false; }
   }
   return true;
@@ -381,7 +385,7 @@ bool Parser::program_1(void) {
         if( get_next_word() ) {
 
           if ( func_or_data() ) {
-
+            //++function_count; 
             return( true );
 
           }
@@ -528,7 +532,7 @@ bool Parser::func_or_data(void) {
   } else if( check_first_plus_set( current_word, FirstPlus::func_or_data_p1 ) ) {
 
     if ( (current_word.get_token_type() == TokenType::SYMBOL) && (current_word.get_token_name() == "(")  ) {
-
+        ++function_count;
       if( get_next_word() ) {
 
         if ( func_0() ) {
@@ -594,6 +598,7 @@ bool Parser::func_1(void) {
 
   if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
     get_next_word();  
+    //++function_count;
     return true;
 
     fail_state = false; 
@@ -640,11 +645,15 @@ bool Parser::func_list(void) {
 
  // Add your code here
 
-  if ( func()) return func_list_0(); 
-
-  fail_state = true; 
-  return false; 
-
+ 
+    if (func()) {
+      //++function_count;
+      return func_list_0();
+    }
+  
+  
+  fail_state = true;
+  return false;
 }
 
 // TODO: Implement this function
@@ -783,6 +792,7 @@ bool Parser::func_list_0(void) {
   if( check_first_plus_set( current_word, FirstPlus::func_list_0_p0 ) ) {
 
     if ( func_list() ) {
+      //++function_count; 
 
       return( true );
 
@@ -907,9 +917,9 @@ bool Parser::func(void) {
     if (current_word.get_token_type() == TokenType::IDENTIFIER) {
       get_next_word();  
       if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
-        get_next_word(); 
+        get_next_word();
+        ++function_count; 
         return func_0();
-        fail_state = false; 
       }; 
     }; 
   }
@@ -1116,6 +1126,7 @@ bool Parser::statements(void) {
     if (statement()) return statements_0();
   
 
+
   fail_state = true;
   return false;
 
@@ -1207,6 +1218,8 @@ bool Parser::statement(void) {
 
 
   // Add your code here
+
+  ++statement_count; 
 
 
    if (current_word.get_token_type() == TokenType::IDENTIFIER) { get_next_word(); return statement_0();
@@ -1445,7 +1458,7 @@ bool Parser::statement_2(void) {
 
   // Add your code here
 
-    if (check_first_plus_set(current_word, FirstPlus::statement_2_p0)) {
+   if (check_first_plus_set(current_word, FirstPlus::statement_2_p0)) {
     if (expression()) {
       if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
         get_next_word(); 
@@ -1453,9 +1466,12 @@ bool Parser::statement_2(void) {
         return true;
       }
     }
-  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+    fail_state = true;
+    return false;
+  } 
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
     get_next_word();
-     fail_state = false;   
+    fail_state = false;   
     return true;
   }
 
@@ -1669,6 +1685,19 @@ bool Parser::comparison_op(void) {
   //                                | <=                     FIRST_PLUS = { <= }
 
   // Add your code here
+   if (current_word.get_token_type() == TokenType::SYMBOL) {
+    if (current_word.get_token_name() == "==" || current_word.get_token_name() == "!=" ||
+        current_word.get_token_name() == ">" || current_word.get_token_name() == ">=" ||
+        current_word.get_token_name() == "<" || current_word.get_token_name() == "<=") {
+      get_next_word();
+      return true;
+    }
+  }
+  
+  fail_state = true;
+  return false;
+
+
 
 }
 
