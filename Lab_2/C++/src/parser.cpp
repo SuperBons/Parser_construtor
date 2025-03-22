@@ -280,38 +280,76 @@ bool Parser::program(void) {
 
 }
 
-// TODO: Implement this function
 bool Parser::type_name(void) {
+  // <type_name> --> int | void | binary | decimal
 
-  // <type_name>                  --> int                     FIRST_PLUS = { int }
-  //                                | void                     FIRST_PLUS = { void }
-  //                                | binary                     FIRST_PLUS = { binary }
-  //                                | decimal                     FIRST_PLUS = { decimal }
 
   // Add your code here
+  if (current_word.get_token_type()== TokenType::RESERVED_WORD && (current_word.get_token_name() == "int" ||
+       current_word.get_token_name() == "void" ||
+       current_word.get_token_name() == "binary" ||
+       current_word.get_token_name() == "decimal")) {
+    get_next_word();
+    return true;
+  }
+  else{ 
+    fail_state = false; 
+  return false;
+  }; 
 
 }
 
 // TODO: Implement this function
 bool Parser::program_0(void) {
-
-  // <program_0>                  --> <id_0> <id_list_0> semicolon <program_1>                     FIRST_PLUS = { comma left_bracket semicolon }
-  //                                | left_parenthesis <func_0> <func_path>                     FIRST_PLUS = { left_parenthesis }
+  // <program_0> --> <id_0> <id_list_0> semicolon <program_1>
+  //            | left_parenthesis <func_0> <func_path>
 
   // Add your code here
 
+
+  if (id_0()) {
+    if (id_list_0()) {
+      if (current_word.get_token_type() ==TokenType::SYMBOL && current_word.get_token_name() == ";") { get_next_word(); 
+        if (program_1())  return true;
+      }
+    }
+  }
+
+
+  if (current_word.get_token_type()== TokenType::SYMBOL && current_word.get_token_name() == "(") {
+    get_next_word();  
+    if (func_0()) {
+      if (func_path()) { 
+        return true;
+      }
+    }
+    fail_state = true;
+    return false;
+  }
+  
+
+  fail_state = true;
+  return false;
 }
 
 
 // TODO: Implement this function
 bool Parser::id_0(void) {
+  // <id_0> --> left_bracket <expression> right_bracket | EPSILON
 
-  // <id_0>                       --> left_bracket <expression> right_bracket                     FIRST_PLUS = { left_bracket }
-  //                                | EPSILON                     FIRST_PLUS = { EPSILON comma semicolon }
+  // Add your code here 
 
-  // Add your code here
-
+  if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "[") {
+    get_next_word();
+    if (!expression()) {fail_state = true; return false;}
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "]") { get_next_word(); return true;}
+    fail_state = true;
+    return false;
+  }
+  return true;
 }
+
+
 
 // TODO: Implement this function
 bool Parser::id_list_0(void) {
@@ -320,7 +358,12 @@ bool Parser::id_list_0(void) {
   //                                | EPSILON                     FIRST_PLUS = { EPSILON semicolon }
 
   // Add your code here
-
+  // this will loop through until there's no ',', taking care of the epsilon 
+  while(current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ",") { get_next_word();  
+    if (!id()) {  fail_state = true; return false; }
+  }
+  return true;
+  
 }
 
 
@@ -371,6 +414,25 @@ bool Parser::func_0(void) {
 
   // Add your code here
 
+    if (current_word.get_token_type() == TokenType::RESERVED_WORD && (current_word.get_token_name() == "binary" ||
+       current_word.get_token_name() == "decimal" ||
+       current_word.get_token_name() == "int" ||
+       current_word.get_token_name() == "void")) {
+    if(!parameter_list()) { fail_state = true; return false;}
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+      get_next_word(); 
+      return func_1();
+    } else {
+      fail_state = true;
+      return false;
+    }
+  }
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+    get_next_word();
+    return func_4();
+  }
+  fail_state =true;
+  return false;
 }
 
 bool Parser::func_path(void) {
@@ -407,6 +469,11 @@ bool Parser::expression(void) {
 
   // Add your code here
 
+   if (factor() && term_0() && expression_0()) return true;
+  
+  fail_state = true;
+  return false;
+
 }
 
 // TODO: Implement this function
@@ -415,6 +482,16 @@ bool Parser::id(void) {
   // <id>                         --> ID <id_0>                     FIRST_PLUS = { ID }
 
   // Add your code here
+
+    if (current_word.get_token_type()== TokenType::IDENTIFIER) {
+    get_next_word(); 
+    return id_0();
+  }
+
+
+  fail_state = true;
+  return false;
+
 }
 
 bool Parser::func_or_data(void) {
@@ -486,6 +563,26 @@ bool Parser::parameter_list(void) {
 
   // Add your code here
 
+  // take care of void get in 
+  if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "void") {
+    get_next_word(); 
+    return parameter_list_0();
+  }
+  
+  // now take caer of int, decimal, or binary 
+  if (current_word.get_token_type() == TokenType::RESERVED_WORD && (current_word.get_token_name() == "int" ||
+      current_word.get_token_name() == "decimal" || current_word.get_token_name() == "binary")) {
+    if (!type_name()) { fail_state = true; return false;}
+
+    // once there's a int, decimal, or binary there must be a identifier that follows if not it won't work 
+    if (current_word.get_token_type() != TokenType::IDENTIFIER) { fail_state = true; return false; }
+    get_next_word();  
+    return non_empty_list_0();
+  }
+  
+  fail_state = true;
+  return false;
+
 }
 
 // TODO: Implement this function
@@ -494,8 +591,22 @@ bool Parser::func_1(void) {
   // <func_1>                     --> semicolon                     FIRST_PLUS = { semicolon }
   //                                | left_brace <func_2>                     FIRST_PLUS = { left_brace }
 
-  // Add your code here
 
+  if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+    get_next_word();  
+    return true;
+
+    fail_state = false; 
+  }
+
+
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "{") {
+    get_next_word();  
+    return func_2();
+  }
+
+  fail_state = true;
+  return false; 
 }
 
 // TODO: Implement this function
@@ -506,6 +617,20 @@ bool Parser::func_4(void) {
 
   // Add your code here
 
+  if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+    get_next_word(); 
+    return true;
+    fail_state = false; 
+  }
+
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "{") {
+    get_next_word();  
+    return func_5(); 
+  }
+  
+  fail_state = true;
+  return false;
+
 }
 
 // TODO: Implement this function
@@ -514,6 +639,9 @@ bool Parser::func_list(void) {
   // <func_list>                  --> <func> <func_list_0>                     FIRST_PLUS = { binary decimal int void }
 
  // Add your code here
+
+  
+
 
 }
 
