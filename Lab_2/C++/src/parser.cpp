@@ -293,7 +293,7 @@ bool Parser::type_name(void) {
     return true;
   }
   else{ 
-    fail_state = false; 
+    fail_state = true; 
   return false;
   }; 
 
@@ -640,8 +640,10 @@ bool Parser::func_list(void) {
 
  // Add your code here
 
-  
+  if ( func()) return func_list_0(); 
 
+  fail_state = true; 
+  return false; 
 
 }
 
@@ -654,6 +656,49 @@ bool Parser::factor(void) {
   //                                | left_parenthesis <expression> right_parenthesis                     FIRST_PLUS = { left_parenthesis }
 
   // Add your code here
+
+    if (current_word.get_token_type() == TokenType::IDENTIFIER) { get_next_word();  
+    return factor_0();
+
+
+
+  }
+  else if (current_word.get_token_type() == TokenType::NUMBER) {
+    get_next_word();  
+    return true;
+  }
+
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "-") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::NUMBER) {
+      get_next_word();  
+      return true;
+    }  
+
+    fail_state = true;
+    return false;
+  }
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+    get_next_word(); 
+    if (expression()) {
+
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+
+        get_next_word();  
+        return true;
+      }
+    }
+
+
+    fail_state = true;
+    return false;
+  }
+
+
+  fail_state = true;
+  return false;
+
+
 
 }
 
@@ -765,6 +810,12 @@ bool Parser::parameter_list_0(void) {
 
   // Add your code here
 
+    if (current_word.get_token_type() == TokenType::IDENTIFIER) {
+    get_next_word(); 
+    return non_empty_list_0();
+  }; 
+ 
+  return true;
 }
 
 // TODO: Implement this function
@@ -775,6 +826,14 @@ bool Parser::non_empty_list_0(void) {
 
   // Add your code here
 
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ",") {
+    get_next_word();  
+    if ( !type_name() ) {fail_state = true; return false; }; 
+    if (current_word.get_token_type() != TokenType::IDENTIFIER) { fail_state = true; return false; }; 
+    get_next_word(); 
+    return non_empty_list_0();
+  }; 
+  return true;
 }
 
 // TODO: Implement this function
@@ -786,6 +845,25 @@ bool Parser::func_2(void) {
 
   // Add your code here
 
+  if (check_first_plus_set(current_word,FirstPlus::data_decls_p0)) {if (data_decls()) return func_3(); } 
+  
+  else if (check_first_plus_set(current_word, FirstPlus::statements_p0)) {
+    if (statements()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+        get_next_word();  
+        return true;
+      }; 
+    }; 
+   }
+    else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+    get_next_word(); 
+    return true;
+  }
+
+
+
+  fail_state = true;
+  return false;  
 }
 
 // TODO: Implement this function
@@ -797,6 +875,26 @@ bool Parser::func_5(void) {
 
   // Add your code here
 
+
+  // same thing as the last just with 
+
+  if (check_first_plus_set(current_word, FirstPlus::data_decls_p0)) { if (data_decls()) return func_6();
+  } 
+  else if (check_first_plus_set(current_word, FirstPlus::statements_p0)) {
+    if (statements()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+        get_next_word();  
+        return true;
+      }; 
+    }; 
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+    get_next_word();  
+    return true;
+  }
+
+  fail_state = true;
+  return false;
+
 }
 
 // TODO: Implement this function
@@ -805,8 +903,54 @@ bool Parser::func(void) {
   // <func>                       --> <type_name> ID left_parenthesis <func_0>                     FIRST_PLUS = { binary decimal int void }
 
   // Add your code here
+  if (type_name()) {
+    if (current_word.get_token_type() == TokenType::IDENTIFIER) {
+      get_next_word();  
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+        get_next_word(); 
+        return func_0();
+        fail_state = false; 
+      }; 
+    }; 
+  }
+
+  fail_state = true;
+  return false;
 
 }
+
+
+bool Parser::factor_1(void) {
+  // <factor_1> --> <expr_list> right_parenthesis                     FIRST_PLUS = { ID NUMBER left_parenthesis minus_sign }
+  //               | right_parenthesis                     FIRST_PLUS = { right_parenthesis }
+
+  if (check_first_plus_set(current_word, FirstPlus::factor_1_p0)) {
+    // Try first production: <expr_list> right_parenthesis
+    if (expr_list()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+        get_next_word();
+        return true;
+      }
+      fail_state = true;
+      return false;
+    }
+    fail_state = true;
+    return false;
+  } 
+  else if (check_first_plus_set(current_word, FirstPlus::factor_1_p1)) {
+    // Try second production: right_parenthesis
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+      get_next_word();
+      return true;
+    }
+    fail_state = true;
+    return false;
+  }
+
+  fail_state = true;
+  return false;
+}
+
 
 // TODO: Implement this function
 bool Parser::factor_0(void) {
@@ -816,6 +960,28 @@ bool Parser::factor_0(void) {
   //                                | EPSILON                     FIRST_PLUS = { != < <= == > >= EPSILON comma double_and_sign double_or_sign forward_slash minus_sign plus_sign right_bracket right_parenthesis semicolon star_sign }
 
   // Add your code here
+
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "[") {
+    get_next_word();  
+    if (!expression()) {
+    fail_state = true;
+      return false;
+    }
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "]") {
+      get_next_word(); 
+      return true;
+    }
+    fail_state = true;
+    return false;
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+    get_next_word();  
+    return factor_1();
+  }
+
+
+   fail_state = false; 
+   return true;
+  
 
 }
 
@@ -827,6 +993,18 @@ bool Parser::mulop(void) {
 
   // Add your code here
 
+   if (current_word.get_token_type()  == TokenType::SYMBOL) {
+    if (current_word.get_token_name() == "*" || current_word.get_token_name() == "/") {
+      get_next_word();  
+      fail_state = false;
+      return true;
+       
+    }
+  }
+
+  fail_state = true;
+  return false;
+
 }
 
 // TODO: Implement this function
@@ -837,6 +1015,17 @@ bool Parser::addop(void) {
 
   // Add your code here
 
+    if (current_word.get_token_type() == TokenType::SYMBOL) {
+      if (current_word.get_token_name()== "+" || current_word.get_token_name()== "-") {
+      get_next_word(); 
+      fail_state = false;
+      return true;
+       
+    }
+  }
+
+  fail_state = true;
+  return false;
 }
 
 // TODO: Implement this function
@@ -846,6 +1035,10 @@ bool Parser::term(void) {
 
   // Add your code here
 
+  if(factor()) return term_0(); 
+
+  fail_state = true; 
+  return false; 
 }
 
 bool Parser::data_decls(void) {
@@ -892,6 +1085,25 @@ bool Parser::func_3(void) {
 
   // Add your code here
 
+    if (check_first_plus_set(current_word, FirstPlus::statements_p0)) {
+    if (statements()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+        get_next_word(); 
+        fail_state = false;
+        return true;
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+    get_next_word(); 
+    fail_state = false;
+    return true;
+  }
+
+  fail_state = true;
+  return false;
+
+
+
 }
 
 // TODO: Implement this function
@@ -900,6 +1112,12 @@ bool Parser::statements(void) {
   // <statements>                 --> <statement> <statements_0>                     FIRST_PLUS = { ID break continue if print read return while write }
 
   // Add your code here
+
+    if (statement()) return statements_0();
+  
+
+  fail_state = true;
+  return false;
 
 }
 
@@ -910,6 +1128,22 @@ bool Parser::func_6(void) {
   //                                | right_brace                     FIRST_PLUS = { right_brace }
 
   // Add your code here
+  
+    if (check_first_plus_set(current_word, FirstPlus::statements_p0)) {
+    if (statements()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+        get_next_word();  
+        return true;
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+    get_next_word();  
+    fail_state = false; 
+    return true;
+  }
+
+  fail_state = true;
+  return false;
 
 }
 
@@ -948,6 +1182,14 @@ bool Parser::data_decls_0(void) {
 
   // Add your code here
 
+    if (check_first_plus_set(current_word, FirstPlus::data_decls_0_p0)) return data_decls();
+  
+
+  fail_state = false; 
+  return true;
+
+
+
 }
 
 // TODO: Implement this function
@@ -965,6 +1207,103 @@ bool Parser::statement(void) {
 
 
   // Add your code here
+
+
+   if (current_word.get_token_type() == TokenType::IDENTIFIER) { get_next_word(); return statement_0();
+  } 
+  
+  else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() =="if") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+      get_next_word(); 
+      if (condition_expression()) {
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+          get_next_word();  
+          return block_statements();
+        }
+      }
+    }
+  }
+   else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "while") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+      get_next_word();  
+      if (condition_expression()) {
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+          get_next_word();  
+          return block_statements();
+        }
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "return") {
+    get_next_word();  
+    return statement_2();
+  } else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "break") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+      get_next_word();  
+      fail_state = false; 
+      return true;
+      
+    }
+  } else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "continue") {
+    get_next_word(); 
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+      get_next_word();  
+      return true;
+    }
+  } else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "read") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+      get_next_word();  
+      if (current_word.get_token_type() == TokenType::IDENTIFIER) {
+        get_next_word(); 
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+          get_next_word(); 
+          if(current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+            get_next_word();  
+            return true;
+          }
+        }
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::RESERVED_WORD &&  current_word.get_token_name() == "write") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+      get_next_word();  
+      if (expression()) {
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+          get_next_word();  
+          if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+            get_next_word();  
+            return true;
+          }
+        }
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::RESERVED_WORD && current_word.get_token_name() == "print") {
+    get_next_word(); 
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+      get_next_word();  
+      if (current_word.get_token_type() == TokenType::STRING) {
+        get_next_word(); 
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+          get_next_word(); 
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+            get_next_word();  
+            fail_state = false; 
+            return true;
+          
+          }; 
+        }; 
+      }; 
+    }; 
+  }; 
+
+  fail_state = true;
+  return false;
+
+
   
 }
 
@@ -975,6 +1314,16 @@ bool Parser::statements_0(void) {
   //                                | EPSILON                     FIRST_PLUS = { EPSILON right_brace }
 
   // Add your code here
+
+
+    if (check_first_plus_set(current_word, FirstPlus::statements_0_p0)) return statements();
+  
+
+  fail_state = false; 
+  return true;
+
+
+
 
 }
 
@@ -1007,6 +1356,41 @@ bool Parser::statement_0(void) {
   //                                | left_parenthesis <statement_1>                     FIRST_PLUS = { left_parenthesis }
 
   // Add your code here
+
+
+   if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "=") {
+    get_next_word(); 
+    if (expression()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+        get_next_word();  
+        return true;
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "[") {
+    get_next_word(); 
+    if (expression()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL &&  current_word.get_token_name() == "]") {
+        get_next_word();  
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "=") {
+          get_next_word(); 
+          if (expression()) {
+            if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+              get_next_word(); 
+              return true;
+            }; 
+          };
+        };
+      };
+    };
+  }
+   else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "(") {
+    get_next_word();    
+    return statement_1();
+  }
+
+  fail_state = true;
+  return false;
+
 
 }
 
@@ -1042,6 +1426,15 @@ bool Parser::block_statements(void) {
 
   // Add your code here
 
+   if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "{") {
+    get_next_word();  
+    return block_statements_0();
+  }
+
+  fail_state = true;
+  return false;
+
+
 }
 
 // TODO: Implement this function
@@ -1051,6 +1444,23 @@ bool Parser::statement_2(void) {
   //                                | semicolon                     FIRST_PLUS = { semicolon }
 
   // Add your code here
+
+    if (check_first_plus_set(current_word, FirstPlus::statement_2_p0)) {
+    if (expression()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+        get_next_word(); 
+        fail_state = false; 
+        return true;
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+    get_next_word();
+     fail_state = false;   
+    return true;
+  }
+
+  fail_state = true;
+  return false;
 
 }
 
@@ -1086,6 +1496,31 @@ bool Parser::statement_1(void) {
   //                                | right_parenthesis semicolon                     FIRST_PLUS = { right_parenthesis }
 
   // Add your code here
+
+ if (check_first_plus_set(current_word, FirstPlus::expr_list_p0)) {
+    if (expr_list()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+        get_next_word();  
+        if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+          get_next_word();  
+          return true;
+        };
+      };
+    };
+  }
+  
+  else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ")") {
+    get_next_word();  
+    if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == ";") {
+      get_next_word();  
+      fail_state = false; 
+      return true;
+    }
+  }
+
+  fail_state = true;
+  return false;
+
 
 }
 
@@ -1156,7 +1591,30 @@ bool Parser::block_statements_0(void) {
   // <block_statements_0>         --> <statements> right_brace                     FIRST_PLUS = { ID break continue if print read return while write }
   //                                | right_brace                     FIRST_PLUS = { right_brace }
 
+
   // Add your code here
+
+
+
+  if (check_first_plus_set(current_word, FirstPlus::statements_p0)) {
+    if (statements()) {
+      if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+        get_next_word();  
+        fail_state = false; 
+        return true;
+      }
+    }
+  } else if (current_word.get_token_type() == TokenType::SYMBOL && current_word.get_token_name() == "}") {
+    get_next_word();  
+    fail_state = false; 
+    return true;
+  }
+
+  fail_state = true;
+  return false;
+
+
+
 
 }
 
