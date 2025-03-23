@@ -27,7 +27,7 @@
 
 
 Parser::Parser() :
-  fail_state{false}, variable_count{0}, function_count{1}, statement_count{0},
+  fail_state{false}, variable_count{0}, function_count{0}, statement_count{0},
   scanner{nullptr},
   current_word{ TokenType::INITIAL, std::string{""}, 0 }
 {
@@ -319,7 +319,8 @@ bool Parser::program_0(void) {
 
 
   if (current_word.get_token_type()== TokenType::SYMBOL && current_word.get_token_name() == "(") {
-    get_next_word();  
+    get_next_word();
+    ++function_count;
     if (func_0()) {
       if (func_path()) { 
         return true;
@@ -385,7 +386,7 @@ bool Parser::program_1(void) {
         if( get_next_word() ) {
 
           if ( func_or_data() ) {
-            //++function_count; 
+            ++function_count;
             return( true );
 
           }
@@ -532,9 +533,8 @@ bool Parser::func_or_data(void) {
   } else if( check_first_plus_set( current_word, FirstPlus::func_or_data_p1 ) ) {
 
     if ( (current_word.get_token_type() == TokenType::SYMBOL) && (current_word.get_token_name() == "(")  ) {
-        ++function_count;
       if( get_next_word() ) {
-
+        ++function_count;
         if ( func_0() ) {
 
           if ( func_list_0() ) {
