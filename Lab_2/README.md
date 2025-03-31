@@ -1,0 +1,2 @@
+Well this project was fun, took alot of time and there was alot of debugging 
+given the comments but it seems to be working correctly. All the TODOs were implemented where needed to be. Running was done through a script i made but deleted since it seems to not be important when submiting. 
